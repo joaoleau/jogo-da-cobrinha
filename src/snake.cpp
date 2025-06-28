@@ -1,5 +1,5 @@
-#include "snake.h"
-#include <GLFW/glfw3.h>
+#include "../include/class/snake.h"
+#include <GL/freeglut.h>
 
 Snake::Snake() : alive(true), dirX(1), dirY(0) {
     body.push_back({10, 7});

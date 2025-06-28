@@ -1,102 +1,108 @@
-#include <GLFW/glfw3.h>
+#include <GL/freeglut.h>
 #include "../include/class/snake.h"
 #include "../include/class/food.h"
 #include "../include/utils/draw_utils.h"
+#include "../include/utils/keycallback.h"
 #include <string>
 
-void keyCallback(GLFWwindow*, int, int, int, int);
-void resetGame(Snake& snake, Food& food);
+bool gameStarted = false;
+int gridWidth = 20, gridHeight = 15;
+int score = 0;
+Snake snake;
+Food* food;
+double lastMoveTime = 0.0;
+const double moveInterval = 150;
+
+void resetGame();
+void processGameLogic();
+void renderScene();
 void renderScoreText(int score);
 void renderStartScreen();
-bool shouldMove(double currentTime, double& lastMoveTime, double moveInterval);
-void processGameLogic(Snake& snake, Food& food, int& score, GLFWwindow* window);
-void renderScene(Snake& snake, Food& food, int score, int gridWidth, int gridHeight);
+bool shouldMove(int currentTime);
 
-bool gameStarted = false;
+void display() {
+    glClear(GL_COLOR_BUFFER_BIT);
+    glLoadIdentity();
 
-int main() {
-    int gridWidth = 20, gridHeight = 15;
-    int score = 0;
+    int currentTime = glutGet(GLUT_ELAPSED_TIME);
 
-    if (!glfwInit()) return -1;
+    drawBackground(gridWidth, gridHeight);
 
-    GLFWwindow* window = glfwCreateWindow(1200, 800, "Cobrinha", nullptr, nullptr);
-    glfwMakeContextCurrent(window);
-    glfwSetKeyCallback(window, keyCallback);
+    if (gameStarted) {
+        if (shouldMove(currentTime)) {
+            processGameLogic();
+            lastMoveTime = currentTime;
+        }
+        renderScene();
+    } else {
+        renderStartScreen();
+    }
 
-    Snake snake;
-    Food food(gridWidth, gridHeight);
-    food.spawn(snake);
+    glutSwapBuffers();
+}
 
-    glfwSetWindowUserPointer(window, &snake);
+void idle() {
+    glutPostRedisplay();
+}
 
-    double lastMoveTime = 0.0;
-    const double moveInterval = 0.15;
+int main(int argc, char** argv) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
+    glutInitWindowSize(1200, 800);
+    glutCreateWindow("Cobrinha");
 
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
-    while (!glfwWindowShouldClose(window)) {
-        glClear(GL_COLOR_BUFFER_BIT);
-        glLoadIdentity();
+    snake = Snake();
+    food = new Food(gridWidth, gridHeight);
+    food->spawn(snake);
 
-        double currentTime = glfwGetTime();
+    glutDisplayFunc(display);
+    glutIdleFunc(idle);
+    glutKeyboardFunc(keyCallback);
+    glutSpecialFunc(specialKeyCallback);
 
-        drawBackground(gridWidth, gridHeight);
+    lastMoveTime = glutGet(GLUT_ELAPSED_TIME);
 
-        if (gameStarted) {
-            if (shouldMove(currentTime, lastMoveTime, moveInterval)) {
-                processGameLogic(snake, food, score, window);
-            }
+    glutMainLoop();
 
-            renderScene(snake, food, score, gridWidth, gridHeight);
-        } else {
-            renderStartScreen();
-        }
-
-        
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-    }
-
-    glfwTerminate();
     return 0;
 }
 
-bool shouldMove(double currentTime, double& lastMoveTime, double moveInterval) {
-    if (currentTime - lastMoveTime >= moveInterval) {
-        lastMoveTime = currentTime;
-        return true;
-    }
-    return false;
+bool shouldMove(int currentTime) {
+    return (currentTime - lastMoveTime) >= moveInterval;
 }
 
+void resetGame() {
+    snake.reset();
+    food->spawn(snake);
+    score = 0;
+    glutSetWindowTitle("Cobrinha - Score: 0");
+}
 
-void processGameLogic(Snake& snake, Food& food, int& score, GLFWwindow* window) {
+void processGameLogic() {
     Position oldTail = snake.getBody().back();
-
     snake.move();
 
     if (snake.checkCollision()) {
-        resetGame(snake, food);
-        score = 0;
+        resetGame();
         gameStarted = false;
-        glfwSetWindowTitle(window, "Cobrinha - Score: 0");
     }
 
-    if (snake.getHeadPosition().x == food.getPosition().x &&
-        snake.getHeadPosition().y == food.getPosition().y) {
+    if (snake.getHeadPosition().x == food->getPosition().x &&
+        snake.getHeadPosition().y == food->getPosition().y) {
         snake.grow(oldTail);
-        food.spawn(snake);
+        food->spawn(snake);
         score++;
 
         std::string title = "Cobrinha - Score: " + std::to_string(score);
-        glfwSetWindowTitle(window, title.c_str());
+        glutSetWindowTitle(title.c_str());
     }
 }
 
-void renderScene(Snake& snake, Food& food, int score, int gridWidth, int gridHeight) {
+void renderScene() {
     snake.draw();
-    food.draw();
+    food->draw();
     renderScoreText(score);
 }
 
@@ -151,10 +157,4 @@ void renderStartScreen() {
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
     glMatrixMode(GL_MODELVIEW);
-}
-
-
-void resetGame(Snake& snake, Food& food) {
-    snake.reset();
-    food.spawn(snake);
 }

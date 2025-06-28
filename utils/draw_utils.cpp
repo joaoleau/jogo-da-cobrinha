@@ -1,4 +1,4 @@
-#include <GLFW/glfw3.h>
+#include <GL/freeglut.h>
 #define STB_EASY_FONT_IMPLEMENTATION
 #include "../include/utils/stb_easy_font.h"
 #include "../include/utils/draw_utils.h"

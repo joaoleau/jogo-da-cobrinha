@@ -1,6 +1,7 @@
 #include "../include/class/food.h"
 #include <cstdlib>
 #include <ctime>
+#include <GL/freeglut.h>
 
 Food::Food(int width, int height)
     : gridWidth(width), gridHeight(height) {

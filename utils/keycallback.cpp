@@ -1,24 +1,26 @@
+#include "../include/utils/keycallback.h"
 #include "../include/class/snake.h"
-#include <GLFW/glfw3.h>
+#include <GL/freeglut.h>
 
 extern bool gameStarted;
+extern Snake snake;
 
-void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    Snake* snake = static_cast<Snake*>(glfwGetWindowUserPointer(window));
+void keyCallback(unsigned char key, int x, int y) {
+    if (!gameStarted && key == ' ') {
+        gameStarted = true;
+    }
+    if (key == 27) {
+        exit(0);
+    }
+}
 
-    if (action == GLFW_PRESS) {
-        if (!gameStarted && key == GLFW_KEY_SPACE) {
-            gameStarted = true;
-            return;
-        }
+void specialKeyCallback(int key, int x, int y) {
+    if (!gameStarted) return;
 
-        if (gameStarted) {
-            switch (key) {
-                case GLFW_KEY_UP:    snake->setDirection(0, 1); break;
-                case GLFW_KEY_DOWN:  snake->setDirection(0, -1); break;
-                case GLFW_KEY_LEFT:  snake->setDirection(-1, 0); break;
-                case GLFW_KEY_RIGHT: snake->setDirection(1, 0); break;
-            }
-        }
+    switch (key) {
+        case GLUT_KEY_UP:    snake.setDirection(0, 1); break;
+        case GLUT_KEY_DOWN:  snake.setDirection(0, -1); break;
+        case GLUT_KEY_LEFT:  snake.setDirection(-1, 0); break;
+        case GLUT_KEY_RIGHT: snake.setDirection(1, 0); break;
     }
 }

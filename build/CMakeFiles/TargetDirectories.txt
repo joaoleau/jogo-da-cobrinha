@@ -1,3 +1,0 @@
-D:/Faculdade/ComputacaoGrafica/jogo-da-cobrinha/build/CMakeFiles/cobrinha.dir
-D:/Faculdade/ComputacaoGrafica/jogo-da-cobrinha/build/CMakeFiles/edit_cache.dir
-D:/Faculdade/ComputacaoGrafica/jogo-da-cobrinha/build/CMakeFiles/rebuild_cache.dir
